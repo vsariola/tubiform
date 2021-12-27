@@ -26,7 +26,8 @@ main:
     fidiv	word [bx-8]	; fpu: const*cos(theta)/x/256=1/r theta
     fisub	word [byte si+time]     ; fpu: r+offset theta
     fistp	dword [bx-7]            ; store r+offset to where dh is, fpu: theta
-    fimul	word [byte si+time+2]	; fpu: t*theta (+2 is initially wrong, but will be replaced with time+0 i.e. correct)
+    fimul	word [byte si+time+3]	; fpu: t*theta (+2 is initially wrong, but will be replaced with time+0 i.e. correct)
+    ;fimul	word [byte si+5]	; fpu: t*theta (+2 is initially wrong, but will be replaced with time+0 i.e. correct)
     .thetascale equ $-1
     fistp	word [bx-5] ; store
     popa				; pop all registers from stack
@@ -44,7 +45,7 @@ main:
     add     di, word [envs] ; advance di by "random value" (actually, the two first envelopes) for dithering
     mov 	ax, 0xCCCD		; Rrrola trick!
     mul 	di              ; dh = y, dl = x
-    cmp     byte [irq.pattern],orderlist-time-1+35 ; check if the pattern is at end
+    cmp     byte [irq.pattern],orderlist-time-1+40 ; check if the pattern is at end
     jne     main
     ret
 
@@ -55,17 +56,17 @@ time:
 ; There is no need for "first pattern" script, because for the first
 ; pattern, everything is as loaded. So we place time in that slot.
 orderlist:
-    db                             0, 8, 0,
-    db main.thetascale-main, time, 8, 8, 0,
-    db     main.effect-main, 0xE1,15,15, 0,
-    db     main.effect-main, 0xFF, 8, 8, 0,
-    db       irq.chord-main,    3, 8, 0,23,
-    db       irq.chord-main,    2, 8, 8,23,
-    db    main.palette-main,   64,11, 0,23,
+    db                             0x00, 0x62, 0x00
+    db main.thetascale-main, time, 0x61, 0x61, 0x00
+    db     main.effect-main, 0xE1, 0x81, 0x81, 0x00
+    db     main.effect-main, 0xFF, 0x61, 0x61, 0x00
+    db main.thetascale-main,    5, 0x61, 0x00, 0x91
+    db     main.effect-main, 0xFF, 0x81, 0x81, 0x81
+    db    main.palette-main,   64, 0x61, 0x61, 0x61
+    db    main.palette-main,   64, 0x62, 0x00, 0x62
 patterns:
-    db 108,  96, 0,  81, 96, 108, 0, 54 ; patterns play from last to first
-    db       64, 72,  0, 72,  72, 0, 72 ; the 54 is overlapping the previous pattern
-    db 128, 108, 0, 108,  0,   0, 0, 54
+    db 108, 96, 0,  81, 96, 108, 0, 54 ; patterns play from last to first
+    db  54, 54, 0, 54,  54,  54,  0, 54
 
 
 irq:
@@ -79,6 +80,9 @@ irq:
     .pattern equ $ - 1
     test    bx, bx              ; if pattern is zero...
     jz      .skipchannel        ; ... then skip this channel totally
+    mov     di, bx
+    and     bl, 15
+    shl     bl, 3
     mov     dx, [si]            ; si points to time
     shr     dx, cl              ; the bits shifted out of si are the position within note
     and     dh, 7               ; patterns are 8 notes long, dh is now the row within pattern
@@ -86,10 +90,10 @@ irq:
     shr     dl, 2               ; dl is now the envelope, 0..63
     mov     bl, byte [patterns-8+bx+si-time] ; bl is the note frequency, bh guaranteed 0
     shl     bx, cl              ; the channels are one octave apart
-    imul    bx, 2
-    .chord equ $-1
+    shr     di, 4
+    imul    bx, di
     imul    bx, word [si]       ; t*freq
-    test    bh, 0x20            ; square wave
+    test    bh, 0x80            ; square wave
     jz      .skipchannel
     mov     byte [envs-1+bp+si-time], dl ; save the envelope for visuals
     add     al, dl              ; add channel to sample total
@@ -98,7 +102,8 @@ irq:
     mov     dx, 0378h   ; LPT1 parallel port address
     out     dx, al		; write 8 Bit sample data
     dec     word [si]   ; the time runs backwards to have decaying envelopes
-    jnz     .skipnextpattern
+    js      .skipnextpattern
+    mov     word [si], 0
     movzx   bx, byte [.pattern+si-time] ; modify the movzx instruction
     add     bx, 5                       ; advance order list, each row is 5
     mov     byte [.pattern+si-time], bl ; save back
