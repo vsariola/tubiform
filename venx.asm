@@ -38,8 +38,9 @@ main:
     or   	cl, 32      ; but at the start, we only show bit 5 of the pattern
     and     al, cl      ; we select parts of the texture
     add     dl, byte [byte si+envs+1] ; we add together the two first enveloeps
+    imul    dx, 3
     mul     dl          ; flash the colors based on the sum of the two envelopes
-    mov     al, ah
+    shr     ax, 9
     add     al, 16      ; shift to gray palette, will be replaced with 64 in the last part
     .palette equ $-1
     stosb                   ; di = current pixel, write al to screen
