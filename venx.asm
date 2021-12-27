@@ -56,17 +56,17 @@ time:
 ; There is no need for "first pattern" script, because for the first
 ; pattern, everything is as loaded. So we place time in that slot.
 orderlist:
-    db                               0x00, 0x62, 0x00
+    db                               0x00, 0x68, 0x00
     db main.thetascale-main,   time, 0x61, 0x61, 0x00
     db     main.effect-main,   0xF3, 0x81, 0x81, 0x00
     db     main.effect-main,   0xF2, 0x61, 0x61, 0x00
     db     main.effect-main,   0xFF, 0x91, 0x00, 0x91
     db     main.rscale-main, time+1, 0x81, 0x81, 0x81
     db    main.palette-main,     64, 0x61, 0x61, 0x61
-    db main.thetascale-main, time+3, 0x62, 0x00, 0x62
+    db main.thetascale-main, time+3, 0x68, 0x00, 0x68
 patterns:
     db 108, 96, 0,  81, 96, 108, 0, 54 ; patterns play from last to first
-    db  54, 54, 0, 108,  54,  54,  0, 54
+    db      54, 0, 108, 54,  54, 0, 54 ; 54 from previous pattern
 
 
 irq:
@@ -82,13 +82,12 @@ irq:
     jz      .skipchannel        ; ... then skip this channel totally
     mov     di, bx
     and     bl, 15
-    shl     bl, 3
     mov     dx, [si]            ; si points to time
     shr     dx, cl              ; the bits shifted out of si are the position within note
     and     dh, 7               ; patterns are 8 notes long, dh is now the row within pattern
     add     bl, dh              ; bl is pattern + row
     shr     dl, 2               ; dl is now the envelope, 0..63
-    mov     bl, byte [patterns-8+bx+si-time] ; bl is the note frequency, bh guaranteed 0
+    mov     bl, byte [patterns-1+bx+si-time] ; bl is the note frequency, bh guaranteed 0
     shl     bx, cl              ; the channels are one octave apart
     shr     di, 4
     imul    bx, di
