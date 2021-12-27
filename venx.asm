@@ -56,14 +56,14 @@ time:
 ; There is no need for "first pattern" script, because for the first
 ; pattern, everything is as loaded. So we place time in that slot.
 orderlist:
-    db                             0x00, 0x62, 0x00
-    db main.thetascale-main, time, 0x61, 0x61, 0x00
-    db     main.effect-main, 0xE1, 0x81, 0x81, 0x00
-    db     main.effect-main, 0xFF, 0x61, 0x61, 0x00
-    db main.thetascale-main,    5, 0x61, 0x00, 0x91
-    db     main.effect-main, 0xFF, 0x81, 0x81, 0x81
-    db    main.palette-main,   64, 0x61, 0x61, 0x61
-    db    main.palette-main,   64, 0x62, 0x00, 0x62
+    db                               0x00, 0x62, 0x00
+    db main.thetascale-main,   time, 0x61, 0x61, 0x00
+    db     main.effect-main,   0xF2, 0x81, 0x81, 0x00
+    db     main.effect-main,   0xFF, 0x61, 0x61, 0x00
+    db main.thetascale-main,      5, 0x91, 0x00, 0x91
+    db main.thetascale-main,   time, 0x81, 0x81, 0x81
+    db    main.palette-main,     64, 0x61, 0x61, 0x61
+    db main.thetascale-main, time+3, 0x62, 0x00, 0x62
 patterns:
     db 108, 96, 0,  81, 96, 108, 0, 54 ; patterns play from last to first
     db  54, 54, 0, 54,  54,  54,  0, 54
