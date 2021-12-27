@@ -1,6 +1,6 @@
 org 100h
 
-    ; at startup, ax = 0x0000, si = 0x0100, sp = 0xFFFC (dos child process) and most flags are zero
+    ; at startup, ax = 0x0000, si = 0x0100, sp = 0xFFFE and most flags are zero
     dec     ax          ; PIT counter divisor, al = 255
     mov     dx, irq     ; new handler address
     out     40h, al     ; write PIT counter divisor low byte
@@ -15,19 +15,19 @@ org 100h
     pop 	es
 main:
     sub		dh, 94      ; dh = y, shift it to center the coordinates
-    pusha				; push all registers to stack
-    fild 	word [bx-9]	; fpu: x*256
+    pusha				; push all registers to stack 0xFFFC: ax, 0xFFFA: cx, 0xFFF8: dx, bx, sp, bp, si, di
+    fild 	word [bx-9]	; fpu: x*256             -9 = 0xFFF7, x is at 0xFFF8 and y is at 0xFFF9
     fild 	word [bx-8] ; fpu: y*256(+x) x*256
     fpatan				; fpu: theta
     fst 	st1			; fpu: theta theta
     fprem				; This instruction will be replaced with fcos so for proper tunnel, fpu: cos(theta) theta
+                        ; 0xF3 and 0xFC are pretty ok for the last byte
     .effect equ $-1
     fimul	dword [si]  ; fpu: const*cos(theta) theta, the constant is what ever the beginning of the program assembles to
     fidiv	word [bx-8]	; fpu: const*cos(theta)/x/256=1/r theta
     fisub	word [byte si+time]     ; fpu: r+offset theta
     fistp	dword [bx-7]            ; store r+offset to where dh is, fpu: theta
     fimul	word [byte si+time+3]	; fpu: t*theta (+2 is initially wrong, but will be replaced with time+0 i.e. correct)
-    ;fimul	word [byte si+5]	; fpu: t*theta (+2 is initially wrong, but will be replaced with time+0 i.e. correct)
     .thetascale equ $-1
     fistp	word [bx-5] ; store
     popa				; pop all registers from stack
