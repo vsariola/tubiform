@@ -102,7 +102,7 @@ irq:
     out     dx, al		; write 8 Bit sample data
     dec     word [si]   ; the time runs backwards to have decaying envelopes
     js      .skipnextpattern
-    mov     word [si], 0
+    mov     word [si], cx ; cx guaranteed to be zero
     movzx   bx, byte [.pattern+si-time] ; modify the movzx instruction
     add     bx, 5                       ; advance order list, each row is 5
     mov     byte [.pattern+si-time], bl ; save back
