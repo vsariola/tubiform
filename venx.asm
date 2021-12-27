@@ -66,7 +66,7 @@ orderlist:
     db main.thetascale-main, time+3, 0x62, 0x00, 0x62
 patterns:
     db 108, 96, 0,  81, 96, 108, 0, 54 ; patterns play from last to first
-    db  54, 54, 0, 54,  54,  54,  0, 54
+    db  54, 54, 0, 108,  54,  54,  0, 54
 
 
 irq:
