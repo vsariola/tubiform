@@ -33,17 +33,17 @@ main:
     fistp	word [bx-5] ; store
     popa				; pop all registers from stack
     xor 	al, cl		; al = theta, cl = r
-    mov     cl, byte [envs+2] ; when the last instrument kicks in, it adds more details to pattern
+    mov     cl, byte [byte si+envs+2] ; when the last instrument kicks in, it adds more details to pattern
     mov     dl, cl
     or   	cl, 32      ; but at the start, we only show bit 5 of the pattern
     and     al, cl      ; we select parts of the texture
-    add     dl, byte [envs+1] ; we add together the two first enveloeps
+    add     dl, byte [byte si+envs+1] ; we add together the two first enveloeps
     mul     dl          ; flash the colors based on the sum of the two envelopes
     mov     al, ah
     add     al, 16      ; shift to gray palette, will be replaced with 64 in the last part
     .palette equ $-1
     stosb                   ; di = current pixel, write al to screen
-    add     di, word [envs] ; advance di by "random value" (actually, the two first envelopes) for dithering
+    add     di, word [byte si+envs] ; advance di by "random value" (actually, the two first envelopes) for dithering
     mov 	ax, 0xCCCD		; Rrrola trick!
     mul 	di              ; dh = y, dl = x
     cmp     byte [irq.pattern],orderlist-time-1+40 ; check if the pattern is at end
