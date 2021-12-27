@@ -22,7 +22,8 @@ main:
     fst 	st1			; fpu: theta theta
     fprem				; This instruction will be replaced with fcos so for proper tunnel, fpu: cos(theta) theta
     .effect equ $-1     ; 0xF3 and 0xFC are pretty ok for the last byte
-    fimul	dword [si]  ; fpu: const*cos(theta) theta, the constant is what ever the beginning of the program assembles to
+    fimul	dword [byte si+0]  ; fpu: const*cos(theta) theta, the constant is what ever the beginning of the program assembles to
+    .rscale equ $-1
     fidiv	word [bx-8]	; fpu: const*cos(theta)/x/256=1/r theta
     fisub	word [byte si+time]     ; fpu: r+offset theta
     fistp	dword [bx-7]            ; store r+offset to where dh is, fpu: theta
@@ -57,10 +58,10 @@ time:
 orderlist:
     db                               0x00, 0x62, 0x00
     db main.thetascale-main,   time, 0x61, 0x61, 0x00
-    db     main.effect-main,   0xF2, 0x81, 0x81, 0x00
-    db     main.effect-main,   0xFF, 0x61, 0x61, 0x00
-    db main.thetascale-main,      5, 0x91, 0x00, 0x91
-    db main.thetascale-main,   time, 0x81, 0x81, 0x81
+    db     main.effect-main,   0xF3, 0x81, 0x81, 0x00
+    db     main.effect-main,   0xF2, 0x61, 0x61, 0x00
+    db     main.effect-main,   0xFF, 0x91, 0x00, 0x91
+    db     main.rscale-main, time+1, 0x81, 0x81, 0x81
     db    main.palette-main,     64, 0x61, 0x61, 0x61
     db main.thetascale-main, time+3, 0x62, 0x00, 0x62
 patterns:
