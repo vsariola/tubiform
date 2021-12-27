@@ -21,8 +21,7 @@ main:
     fpatan				; fpu: theta
     fst 	st1			; fpu: theta theta
     fprem				; This instruction will be replaced with fcos so for proper tunnel, fpu: cos(theta) theta
-                        ; 0xF3 and 0xFC are pretty ok for the last byte
-    .effect equ $-1
+    .effect equ $-1     ; 0xF3 and 0xFC are pretty ok for the last byte
     fimul	dword [si]  ; fpu: const*cos(theta) theta, the constant is what ever the beginning of the program assembles to
     fidiv	word [bx-8]	; fpu: const*cos(theta)/x/256=1/r theta
     fisub	word [byte si+time]     ; fpu: r+offset theta
