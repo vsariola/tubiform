@@ -14,7 +14,7 @@ org 100h
     push 	0xa000 - 10 ; set es to video segment, shift half a line
     pop 	es
 main:
-    sub		dh, 94      ; dh = y, shift it to center the coordinates
+    sub		dh, 100      ; dh = y, shift it to center the coordinates
     pusha				; push all registers to stack 0xFFFC: ax, 0xFFFA: cx, 0xFFF8: dx, bx, sp, bp, si, di
     fild 	word [bx-9]	; fpu: x*256             -9 = 0xFFF7, x is at 0xFFF8 and y is at 0xFFF9
     fild 	word [bx-8] ; fpu: y*256(+x) x*256
