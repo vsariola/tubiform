@@ -9,6 +9,7 @@ org 100h
                         ; the frequency is now 1,19318181818 MHz / divisor
     mov     ax, 251ch   ; al = which PIT timer interrupt tos set: 08 or 1c. 1c gets called after 08
     int     21h         ; ah = 25h => set interrupt handler, al = which interrupt
+envs:
     mov		ax, 0x13	; set videomode 13h
     int 	0x10
     push 	0xa000 - 10 ; set es to video segment, shift half a line
@@ -63,7 +64,7 @@ orderlist:
     db     main.effect-main,   0xFF, 0x91, 0x00, 0x91
     db     main.rscale-main, time+1, 0x81, 0x81, 0x81
     db    main.palette-main,     64, 0x61, 0x61, 0x61
-    db main.thetascale-main, time+3, 0x68, 0x00, 0x68
+    db main.thetascale-main, orderlist+1, 0x68, 0x00, 0x68
 patterns:
     db 108, 96, 0,  81, 96, 108, 0, 54 ; patterns play from last to first
     db      54, 0, 108, 54,  54, 0, 54 ; 54 from previous pattern
@@ -112,5 +113,3 @@ irq:
 .skipnextpattern:
     popa
     iret
-
-envs:
