@@ -50,8 +50,13 @@ main:                   ; basic tunnel effect, based on Hellmood's original from
     mov 	ax, 0xCCCD		; Rrrola trick!
     mul 	di              ; dh = y, dl = x
     xchg    bx, ax
+    jo      main
+    in 		al, 0x60        ; check for ESC key
+    dec 	al
+    jz 	    exit
     cmp     byte [irq.pattern],orderlist-time-1+40 ; check if the pattern is at end
     jne     main
+exit:
     ret
 
 
