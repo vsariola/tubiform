@@ -68,7 +68,7 @@ orderlist:
     db     main.effect-main,   0xFE, 0x91, 0x00, 0x91
     db     main.rscale-main, time+1, 0x81, 0x81, 0x81
     db    main.palette-main,     64, 0x61, 0x61, 0x61
-    db main.thetascale-main, orderlist+1, 0x68, 0x00, 0x68
+    db     main.effect-main,   0xD0, 0x68, 0x00, 0x68
 patterns:
     db 108, 96, 0,  81, 96, 108, 0, 54 ; patterns play from last to first
     db      54, 0, 108, 54,  54, 0, 54 ; 54 from previous pattern
