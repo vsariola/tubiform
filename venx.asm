@@ -14,35 +14,35 @@ envs:
     int 	0x10
     push 	0xa000 - 10 ; set es to video segment, shift half a line
     pop 	es
-main:
-    sub		dh, 100      ; dh = y, shift it to center the coordinates
+main:                   ; basic tunnel effect, based on Hellmood's original from http://www.sizecoding.org/wiki/Floating-point_Opcodes#The_.22Tunnel.22
+    sub		dh, 100     ; dh = y, shift it to center the coordinates
     pusha				; push all registers to stack 0xFFFC: ax, 0xFFFA: cx, 0xFFF8: dx, bx, sp, bp, si, di
-    fild 	word [bx-9]	; fpu: x*256             -9 = 0xFFF7, x is at 0xFFF8 and y is at 0xFFF9
-    fild 	word [bx-8] ; fpu: y*256(+x) x*256
+    fild 	word [bx-9]	; fpu: y*256(+x)               -9 = 0xFFF7, x is at 0xFFF8 and y is at 0xFFF9
+    fild 	word [bx-8] ; fpu: x*256 y*256(+x)
     fpatan				; fpu: theta
     fst 	st1			; fpu: theta theta
-    fprem				; This instruction will be replaced with fcos so for proper tunnel, fpu: cos(theta) theta
-    .effect equ $-1     ; 0xF3 and 0xFC are pretty ok for the last byte
+    fprem				; This instruction will be replaced with fsin so for proper tunnel, fpu: sin(theta) theta
+    .effect equ $-1     ; 0xF3, 0xF4, 0xFE and 0xFC are pretty ok for the last byte
     fimul	dword [byte si+0]  ; fpu: const*cos(theta) theta, the constant is what ever the beginning of the program assembles to
     .rscale equ $-1
-    fidiv	word [bx-9]	; fpu: const*cos(theta)/x/256=1/r theta
-    fisub	word [byte si+time]     ; fpu: r+offset theta
-    fistp	dword [bx-8]            ; store r+offset to where dh is, fpu: theta
+    fidiv	word [bx-9]	; fpu: const*cos(theta)/y/256=1/r theta
+    fisub	word [byte si+time]     ; fpu: 1/r+offset theta
+    fistp	dword [bx-8]            ; store r+offset to where dx is, cx&dx affected after popa, fpu: theta
     fimul	word [byte si+time+3]	; fpu: t*theta (+2 is initially wrong, but will be replaced with time+0 i.e. correct)
     .thetascale equ $-1
-    fistp	dword [bx-6] ; store
+    fistp	dword [bx-6] ; store r+offset to where cx is, cx&ax affected after popa,
     popa				; pop all registers from stack
-    xor 	dh, ch		; al = theta, cl = r
+    xor 	dh, ch		; dh = r, ch = theta
     shl     dh, 1
-    and     dh, 64      ; we select parts of the texture
+    and     dh, 64      ; we select parts of the XOR-texture
     mov     al, byte [byte si+envs+2]
-    add     al, byte [byte si+envs+1] ; we add together the two first enveloeps
-    mul     dh          ; flash the colors based on the sum of the two envelopes
+    add     al, byte [byte si+envs+1] ; we add together the last two envelopes
+    mul     dh          ; flash the tunnel color based on the sum of the two envelopes
     mov     al, ah
-    add     al, 16      ; shift to gray palette, will be replaced with 64 in the last part
+    add     al, 16      ; shift to gray palette, will be replaced with 64 in the last part for a more colorful effect
     .palette equ $-1
     stosb                   ; di = current pixel, write al to screen
-    imul    di, 85
+    imul    di, 85          ; traverse the pixels in slightly random order (Hellmood)
     mov 	ax, 0xCCCD		; Rrrola trick!
     mul 	di              ; dh = y, dl = x
     cmp     byte [irq.pattern],orderlist-time-1+40 ; check if the pattern is at end
