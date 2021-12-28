@@ -27,17 +27,17 @@ main:
     .rscale equ $-1
     fidiv	word [bx-8]	; fpu: const*cos(theta)/x/256=1/r theta
     fisub	word [byte si+time]     ; fpu: r+offset theta
-    fistp	dword [bx-7]            ; store r+offset to where dh is, fpu: theta
+    fistp	dword [bx-8]            ; store r+offset to where dh is, fpu: theta
     fimul	word [byte si+time+3]	; fpu: t*theta (+2 is initially wrong, but will be replaced with time+0 i.e. correct)
     .thetascale equ $-1
-    fistp	word [bx-5] ; store
+    fistp	dword [bx-6] ; store
     popa				; pop all registers from stack
-    xor 	al, cl		; al = theta, cl = r
-    shl     ax, 1
-    and     al, 64      ; we select parts of the texture
-    mov     dl, byte [byte si+envs+2]
-    add     dl, byte [byte si+envs+1] ; we add together the two first enveloeps
-    mul     dl          ; flash the colors based on the sum of the two envelopes
+    xor 	dh, ch		; al = theta, cl = r
+    shl     dh, 1
+    and     dh, 64      ; we select parts of the texture
+    mov     al, byte [byte si+envs+2]
+    add     al, byte [byte si+envs+1] ; we add together the two first enveloeps
+    mul     dh          ; flash the colors based on the sum of the two envelopes
     mov     al, ah
     add     al, 16      ; shift to gray palette, will be replaced with 64 in the last part
     .palette equ $-1
