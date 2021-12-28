@@ -35,6 +35,7 @@ main:                   ; basic tunnel effect, based on Hellmood's original from
     .thetascale equ $-1
     fistp	dword [bx-6] ; store r+offset to where cx is, cx&ax affected after popa,
     popa				; pop all registers from stack
+    add     ch, byte [byte si+envs+2] ; we add together the last two envelopes
     xor 	dh, ch		; dh = r, ch = theta
     shl     dh, 1
     and     dh, 64      ; we select parts of the XOR-texture
