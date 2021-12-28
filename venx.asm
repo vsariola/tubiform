@@ -25,7 +25,7 @@ main:
     .effect equ $-1     ; 0xF3 and 0xFC are pretty ok for the last byte
     fimul	dword [byte si+0]  ; fpu: const*cos(theta) theta, the constant is what ever the beginning of the program assembles to
     .rscale equ $-1
-    fidiv	word [bx-8]	; fpu: const*cos(theta)/x/256=1/r theta
+    fidiv	word [bx-9]	; fpu: const*cos(theta)/x/256=1/r theta
     fisub	word [byte si+time]     ; fpu: r+offset theta
     fistp	dword [bx-8]            ; store r+offset to where dh is, fpu: theta
     fimul	word [byte si+time+3]	; fpu: t*theta (+2 is initially wrong, but will be replaced with time+0 i.e. correct)
@@ -60,7 +60,7 @@ orderlist:
     db main.thetascale-main,   time, 0x61, 0x61, 0x00
     db     main.effect-main,   0xF3, 0x81, 0x81, 0x00
     db     main.effect-main,   0xF2, 0x61, 0x61, 0x00
-    db     main.effect-main,   0xFF, 0x91, 0x00, 0x91
+    db     main.effect-main,   0xFE, 0x91, 0x00, 0x91
     db     main.rscale-main, time+1, 0x81, 0x81, 0x81
     db    main.palette-main,     64, 0x61, 0x61, 0x61
     db main.thetascale-main, orderlist+1, 0x68, 0x00, 0x68
