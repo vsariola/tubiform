@@ -1,6 +1,8 @@
 org 100h
 
     ; at startup, ax = 0x0000, si = 0x0100, sp = 0xFFFE and most flags are zero
+    push 	0xa000 - 10-20*3 ; set es to video segment, shifting 3.5 lines (the top three lines had some isual glitch )
+    scaleconst:
     dec     ax          ; PIT counter divisor, al = 255
     mov     dx, irq     ; new handler address
     out     40h, al     ; write PIT counter divisor low byte
@@ -12,10 +14,9 @@ org 100h
 envs:
     mov		ax, 0x13	; set videomode 13h
     int 	0x10
-    push 	0xa000 - 10-20*3 ; set es to video segment, shift half a line
     pop 	es
 main:                   ; basic tunnel effect, based on Hellmood's original from http://www.sizecoding.org/wiki/Floating-point_Opcodes#The_.22Tunnel.22
-    sub		dh, 100     ; dh = y, shift it to center the coordinates
+    sub		dh, [si]     ; dh = y, shift it to center the coordinates
     pusha				; push all registers to stack 0xFFFC: ax, 0xFFFA: cx, 0xFFF8: dx, bx, sp, bp, si, di
     xor     bx, bx
     fild 	word [bx-9]	; fpu: x*256               -9 = 0xFFF7, x is at 0xFFF8 and y is at 0xFFF9
@@ -24,7 +25,7 @@ main:                   ; basic tunnel effect, based on Hellmood's original from
     fst 	st1			; fpu: theta theta
     fprem				; This instruction will be replaced with fsin so for proper tunnel, fpu: sin(theta) theta
     .effect equ $-1     ; 0xF3, 0xF4, 0xFE and 0xFC are pretty ok for the last byte
-    fimul	dword [byte si+0]  ; fpu: const*cos(theta) theta, the constant is what ever the beginning of the program assembles to
+    fimul	dword [byte si+scaleconst]  ; fpu: const*cos(theta) theta, the constant is what ever the lines there assemble to
     .rscale equ $-1
     fidiv	word [bx-9]	; fpu: const*sin(theta)/x/256=1/r theta
     fisub	word [byte si+time]     ; fpu: 1/r+offset theta
