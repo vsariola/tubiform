@@ -102,12 +102,12 @@ irq:
     dec     word [si]   ; the time runs backwards to have decaying envelopes
     js      .skipnextpattern
     mov     word [si], cx ; cx guaranteed to be zero
-    movzx   bx, byte [.pattern+si-time] ; modify the movzx instruction
-    add     bx, 5                       ; advance order list, each row is 5
+    mov     bl, byte [.pattern+si-time] ; modify the movzx instruction
+    add     bl, 5                       ; advance order list, each row is 5
     mov     byte [.pattern+si-time], bl ; save back
-    mov     al, byte [bx+si]            ; al = value to mutate
-    mov     bl, byte [bx+si-1]          ; bl is the relative address of the code to change
-    mov     byte [bx+si-time+main], al  ; change part of the code based on demo part
+    mov     ax, word [byte bx+time-0x100-1]            ; al = value to mutate
+    mov     bl, al
+    mov     byte [byte bx-0x100+main], ah  ; change part of the code based on demo part
 .skipnextpattern:
     popa
     iret
