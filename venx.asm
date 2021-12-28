@@ -74,6 +74,7 @@ irq:
     xor     di, di
     mov     cx, 3               ; cx is the channel loop counter, we have three channels
     mov     si, time
+    lea     bx, [patterns-1+si-time]
 .loop:
     mov     bp, cx
     mov     al, byte [byte orderlist-1+si-time+bp] ; al = pattern number.
@@ -85,7 +86,6 @@ irq:
     and     dh, 7               ; patterns are 8 notes long, dh is now the row within pattern
     add     al, dh              ; al is pattern + row
     shr     dl, 2               ; dl is now the envelope, 0..63
-    lea     bx, [patterns-1+si-time]
     xlat
     mul     ah
     shl     ax, cl              ; the channels are one octave apart
