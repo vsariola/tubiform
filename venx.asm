@@ -2,6 +2,7 @@ org 100h
 
     ; at startup, ax = 0x0000, si = 0x0100, sp = 0xFFFE and most flags are zero
     push 	0xa000 - 10-20*3 ; set es to video segment, shifting 3.5 lines (the top three lines had some isual glitch )
+    pop 	es
     scaleconst:
     dec     ax          ; PIT counter divisor, al = 255
     mov     dx, irq     ; new handler address
@@ -14,7 +15,6 @@ org 100h
 envs:
     mov		ax, 0x13	; set videomode 13h
     int 	0x10
-    pop 	es
 main:                   ; basic tunnel effect, based on Hellmood's original from http://www.sizecoding.org/wiki/Floating-point_Opcodes#The_.22Tunnel.22
     sub		dh, [si]     ; dh = y, shift it to center the coordinates
     pusha				; push all registers to stack 0xFFFC: ax, 0xFFFA: cx, 0xFFF8: dx, bx, sp, bp, si, di
