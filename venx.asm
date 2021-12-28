@@ -33,14 +33,12 @@ main:
     fistp	word [bx-5] ; store
     popa				; pop all registers from stack
     xor 	al, cl		; al = theta, cl = r
-    mov     cl, byte [byte si+envs+2] ; when the last instrument kicks in, it adds more details to pattern
-    mov     dl, cl
-    or   	cl, 32      ; but at the start, we only show bit 5 of the pattern
-    and     al, cl      ; we select parts of the texture
+    shl     ax, 1
+    and     al, 64      ; we select parts of the texture
+    mov     dl, byte [byte si+envs+2]
     add     dl, byte [byte si+envs+1] ; we add together the two first enveloeps
-    imul    dx, 3
     mul     dl          ; flash the colors based on the sum of the two envelopes
-    shr     ax, 9
+    mov     al, ah
     add     al, 16      ; shift to gray palette, will be replaced with 64 in the last part
     .palette equ $-1
     stosb                   ; di = current pixel, write al to screen
