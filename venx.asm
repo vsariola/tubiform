@@ -80,10 +80,9 @@ irq:
     mov     bp, cx
     movzx   bx, byte [byte orderlist-1+si-time+bp] ; bl = pattern number.
     .pattern equ $ - 1
-    test    bx, bx              ; if pattern is zero...
-    jz      .skipchannel        ; ... then skip this channel totally
     mov     di, bx
     and     bl, 15
+    jz      .skipchannel        ; if pattern is zero, skip this channel
     mov     dx, [si]            ; si points to time
     shr     dx, cl              ; the bits shifted out of si are the position within note
     and     dh, 7               ; patterns are 8 notes long, dh is now the row within pattern
