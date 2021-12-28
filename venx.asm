@@ -18,15 +18,15 @@ main:                   ; basic tunnel effect, based on Hellmood's original from
     sub		dh, 100     ; dh = y, shift it to center the coordinates
     pusha				; push all registers to stack 0xFFFC: ax, 0xFFFA: cx, 0xFFF8: dx, bx, sp, bp, si, di
     xor     bx, bx
-    fild 	word [bx-9]	; fpu: y*256(+x)               -9 = 0xFFF7, x is at 0xFFF8 and y is at 0xFFF9
-    fild 	word [bx-8] ; fpu: x*256 y*256(+x)
+    fild 	word [bx-9]	; fpu: x*256               -9 = 0xFFF7, x is at 0xFFF8 and y is at 0xFFF9
+    fild 	word [bx-8] ; fpu: y*256(+x) x*256
     fpatan				; fpu: theta
     fst 	st1			; fpu: theta theta
     fprem				; This instruction will be replaced with fsin so for proper tunnel, fpu: sin(theta) theta
     .effect equ $-1     ; 0xF3, 0xF4, 0xFE and 0xFC are pretty ok for the last byte
     fimul	dword [byte si+0]  ; fpu: const*cos(theta) theta, the constant is what ever the beginning of the program assembles to
     .rscale equ $-1
-    fidiv	word [bx-9]	; fpu: const*cos(theta)/y/256=1/r theta
+    fidiv	word [bx-9]	; fpu: const*sin(theta)/x/256=1/r theta
     fisub	word [byte si+time]     ; fpu: 1/r+offset theta
     fistp	dword [bx-8]            ; store r+offset to where dx is, cx&dx affected after popa, fpu: theta
     fimul	word [byte si+time+3]	; fpu: t*theta (+2 is initially wrong, but will be replaced with time+0 i.e. correct)
