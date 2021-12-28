@@ -12,11 +12,12 @@ org 100h
 envs:
     mov		ax, 0x13	; set videomode 13h
     int 	0x10
-    push 	0xa000 - 10 ; set es to video segment, shift half a line
+    push 	0xa000 - 10-20*3 ; set es to video segment, shift half a line
     pop 	es
 main:                   ; basic tunnel effect, based on Hellmood's original from http://www.sizecoding.org/wiki/Floating-point_Opcodes#The_.22Tunnel.22
     sub		dh, 100     ; dh = y, shift it to center the coordinates
     pusha				; push all registers to stack 0xFFFC: ax, 0xFFFA: cx, 0xFFF8: dx, bx, sp, bp, si, di
+    xor     bx, bx
     fild 	word [bx-9]	; fpu: y*256(+x)               -9 = 0xFFF7, x is at 0xFFF8 and y is at 0xFFF9
     fild 	word [bx-8] ; fpu: x*256 y*256(+x)
     fpatan				; fpu: theta
@@ -42,9 +43,10 @@ main:                   ; basic tunnel effect, based on Hellmood's original from
     add     al, 16      ; shift to gray palette, will be replaced with 64 in the last part for a more colorful effect
     .palette equ $-1
     stosb                   ; di = current pixel, write al to screen
-    imul    di, 85          ; traverse the pixels in slightly random order (Hellmood)
+    imul    di, 85          ; traverse the pixels in slightly random order (tip from Hellmood)
     mov 	ax, 0xCCCD		; Rrrola trick!
     mul 	di              ; dh = y, dl = x
+    xchg    bx, ax
     cmp     byte [irq.pattern],orderlist-time-1+40 ; check if the pattern is at end
     jne     main
     ret
