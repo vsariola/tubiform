@@ -73,32 +73,32 @@ patterns:
 
 irq:
     pusha
-    mov     al, 0
+    xor     di, di
     mov     cx, 3               ; cx is the channel loop counter, we have three channels
     mov     si, time
 .loop:
     mov     bp, cx
-    movzx   bx, byte [byte orderlist-1+si-time+bp] ; bl = pattern number.
+    mov     al, byte [byte orderlist-1+si-time+bp] ; al = pattern number.
     .pattern equ $ - 1
-    mov     di, bx
-    and     bl, 15
+    aam     16
     jz      .skipchannel        ; if pattern is zero, skip this channel
     mov     dx, [si]            ; si points to time
     shr     dx, cl              ; the bits shifted out of si are the position within note
     and     dh, 7               ; patterns are 8 notes long, dh is now the row within pattern
-    add     bl, dh              ; bl is pattern + row
+    add     al, dh              ; al is pattern + row
     shr     dl, 2               ; dl is now the envelope, 0..63
-    mov     bl, byte [patterns-1+bx+si-time] ; bl is the note frequency, bh guaranteed 0
-    shl     bx, cl              ; the channels are one octave apart
-    shr     di, 4
-    imul    bx, di
-    imul    bx, word [si]       ; t*freq
-    test    bh, 0x80            ; square wave
+    lea     bx, [patterns-1+si-time]
+    xlat
+    mul     ah
+    shl     ax, cl              ; the channels are one octave apart
+    imul    ax, word [si]       ; t*freq
+    test    ah, 0x80            ; square wave
     jz      .skipchannel
     mov     byte [envs-1+bp+si-time], dl ; save the envelope for visuals
-    add     al, dl              ; add channel to sample total
+    add     di, dx              ; add channel to sample total
 .skipchannel:
     loop    .loop
+    xchg    ax, di
     mov     dx, 0378h   ; LPT1 parallel port address
     out     dx, al		; write 8 Bit sample data
     dec     word [si]   ; the time runs backwards to have decaying envelopes
