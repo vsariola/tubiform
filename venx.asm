@@ -1,17 +1,18 @@
 org 100h
 
     ; at startup, ax = 0x0000, si = 0x0100, sp = 0xFFFE and most flags are zero
-    push 	0xa000 - 10-20*3 ; set es to video segment, shifting 3.5 lines (the top three lines had some isual glitch )
+    push 	0xa000 - 10-20*3 ; set es to video segment, shifting 3.5 lines (the top three lines had some isual glitch ).
+                                ; push = 0x68 is also used as the shift constant
     pop 	es
     scaleconst:
-    dec     ax          ; PIT counter divisor, al = 255
+    dec     ax          ; PIT counter divisor, al = 255. Irq init based on superogue's code.
     mov     dx, irq     ; new handler address
     out     40h, al     ; write PIT counter divisor low byte
     salc                ; set AL = 0 (because carry is zero)
     out     40h, al	    ; write PIT counter divisor high byte
                         ; the frequency is now 1,19318181818 MHz / divisor
     mov     ax, 251ch   ; al = which PIT timer interrupt tos set: 08 or 1c. 1c gets called after 08
-    int     21h         ; ah = 25h => set interrupt handler, al = which interrupt
+    int     21h         ; ah = 25h => set interrupt handler, al = which interrupt. Tomcat: "standard INT08 rutine call INT1C after its own business"
 envs:
     mov		ax, 0x13	; set videomode 13h
     int 	0x10
