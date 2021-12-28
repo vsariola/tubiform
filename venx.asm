@@ -42,7 +42,7 @@ main:
     add     al, 16      ; shift to gray palette, will be replaced with 64 in the last part
     .palette equ $-1
     stosb                   ; di = current pixel, write al to screen
-    add     di, word [byte si+envs] ; advance di by "random value" (actually, the two first envelopes) for dithering
+    imul    di, 85
     mov 	ax, 0xCCCD		; Rrrola trick!
     mul 	di              ; dh = y, dl = x
     cmp     byte [irq.pattern],orderlist-time-1+40 ; check if the pattern is at end
