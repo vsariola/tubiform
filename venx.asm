@@ -67,14 +67,14 @@ time:
 ; There is no need for "first pattern" script, because for the first
 ; pattern, everything is as loaded. So we place time in that slot.
 orderlist:
-    db                          0x00, 0x68, 0x00
-    db main.thetascale,   time, 0x61, 0x61, 0x00
-    db     main.effect,   0xF3, 0x81, 0x81, 0x00
-    db     main.effect,   0xF4, 0x61, 0x61, 0x00
-    db     main.effect,   0xFE, 0x91, 0x00, 0x91
-    db    main.effect2,   0xFF, 0x81, 0x81, 0x81
-    db    main.palette,     64, 0x61, 0x61, 0x61
-    db     main.effect,   0xE8, 0x68, 0x00, 0x68
+    db                        0x00, 0x68, 0x00
+    db time, main.thetascale, 0x61, 0x61, 0x00
+    db 0xF3,     main.effect, 0x81, 0x81, 0x00
+    db 0xF4,     main.effect, 0x61, 0x61, 0x00
+    db 0xFE,     main.effect, 0x91, 0x00, 0x91
+    db 0xFF,    main.effect2, 0x81, 0x81, 0x81
+    db   64,    main.palette, 0x61, 0x61, 0x61
+    db 0xE8,     main.effect, 0x68, 0x00, 0x68
 patterns:
     db 108, 96, 0,  81, 96, 108, 0, 54  ; patterns play from last to first
     db      54, 0, 108, 54,  54, 0, 54  ; 54 from previous pattern
@@ -117,8 +117,8 @@ irq:
     add     bl, 5                           ; advance order list, each row is 5
     mov     byte [.pattern+si-time], bl     ; save back
     mov     ax, word [byte bx+time-0x100-1] ; al = value to mutate
-    mov     bl, al
-    mov     byte [bx], ah                   ; change part of the code based on demo part
+    mov     bl, ah
+    mov     byte [bx], al                   ; change part of the code based on demo part
 .skipnextpattern:
     popa
     iret
