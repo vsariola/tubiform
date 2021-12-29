@@ -120,13 +120,13 @@ irq:
     out     dx, al		                    ; write 8 Bit sample data
     dec     word [si]                       ; the time runs backwards to have decaying envelopes
     js      .skipnextpattern
-    mov     word [si], cx                   ; cx guaranteed to be zero
-    mov     bl, byte [.pattern+si-time]     ; modify the movzx instruction
-    add     bl, 5                           ; advance order list, each row is 5
-    mov     byte [.pattern+si-time], bl     ; save back
-    mov     ax, word [byte bx+time-0x100-1] ; al = value to mutate
+    mov     ax, word [orderlist+3]
+    .script equ $-2
     mov     bl, ah
     mov     byte [bx], al                   ; change part of the code based on demo part
+    mov     word [si], cx                   ; cx guaranteed to be zero
+    add     byte [.pattern+si-time],5       ; modify the movzx instruction
+    add     word [.script+si-time],5
 .skipnextpattern:
     popa
     iret
