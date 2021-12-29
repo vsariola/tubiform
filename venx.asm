@@ -54,10 +54,8 @@ main:                                   ; basic tunnel effect, based on Hellmood
     jo      main                        ; after pusha / fild word [bx-9]
     in 		al, 0x60                    ; check for ESC key
     dec 	al
-    jz 	    exit
-    cmp     byte [irq.pattern],orderlist-time-1+40 ; check if the pattern is at end
-    jne     main
-exit:
+    jnz	    main
+    .looptarget equ $-1
     ret
 
 
@@ -75,6 +73,7 @@ orderlist:
     db 0xFF,    main.effect2, 0x81, 0x81, 0x81
     db   64,    main.palette, 0x61, 0x61, 0x61
     db 0xE8,     main.effect, 0x68, 0x00, 0x68
+    db 0x00, main.looptarget            ; last mutation: change the main loop target to point to next line aka exit
 patterns:
     db 108, 96, 0,  81, 96, 108, 0, 54  ; patterns play from last to first
     db      54, 0, 108, 54,  54, 0, 54  ; 54 from previous pattern
