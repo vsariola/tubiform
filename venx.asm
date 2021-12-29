@@ -109,8 +109,8 @@ irq:
     mul     ah
     shl     ax, cl                          ; the channels are one octave apart
     imul    ax, word [si]                   ; t*freq
-    test    ah, 0x80                        ; square wave
-    jz      .skipchannel
+    test    ah, ah                          ; square wave
+    jns      .skipchannel
     mov     byte [envs-1+bp+si-time], dl    ; save the envelope for visuals
     add     di, dx                          ; add channel to sample total
 .skipchannel:
