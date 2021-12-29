@@ -31,6 +31,8 @@ main:                   ; basic tunnel effect, based on Hellmood's original from
     fidiv	word [bx-9]	; fpu: const*sin(theta)/x/256=1/r theta
     fisub	word [byte si+time]     ; fpu: 1/r+offset theta
     fistp	dword [bx-8]            ; store r+offset to where dx is, cx&dx affected after popa, fpu: theta
+    fnop
+    .effect2 equ $-1
     fimul	word [byte si+time+3]	; fpu: t*theta (+2 is initially wrong, but will be replaced with time+0 i.e. correct)
     .thetascale equ $-1
     fistp	dword [bx-6] ; store r+offset to where cx is, cx&ax affected after popa,
@@ -71,9 +73,9 @@ orderlist:
     db     main.effect-main,   0xF3, 0x81, 0x81, 0x00
     db     main.effect-main,   0xF4, 0x61, 0x61, 0x00
     db     main.effect-main,   0xFE, 0x91, 0x00, 0x91
-    db     main.rscale-main, time+1, 0x81, 0x81, 0x81
+    db    main.effect2-main,   0xFF, 0x81, 0x81, 0x81
     db    main.palette-main,     64, 0x61, 0x61, 0x61
-    db     main.effect-main,   0xD0, 0x68, 0x00, 0x68
+    db    main.effect2-main,   0xF4, 0x68, 0x00, 0x68
 patterns:
     db 108, 96, 0,  81, 96, 108, 0, 54 ; patterns play from last to first
     db      54, 0, 108, 54,  54, 0, 54 ; 54 from previous pattern
