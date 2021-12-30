@@ -8,7 +8,7 @@ org 100h
     push 	0xa000 - 10-20*3            ; set es to video segment, shifting 3.5 lines (the top three lines had some isual glitch ).
                                         ; push = 0x68 is also used as the shift constant
     pop 	es
-    scaleconst equ $+1
+    scaleconst equ $
     xchg    ax, cx                      ; PIT counter divisor, al = 255. Irq init based on superogue's code.
     mov     dx, irq                     ; new handler address
     call    setirq
