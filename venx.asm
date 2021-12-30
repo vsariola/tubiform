@@ -95,7 +95,7 @@ irq:
     xor     di, di
     mov     cx, 3                           ; cx is the channel loop counter, we have three channels
     mov     si, time
-    lea     bx, [patterns-1+si-time]
+    mov     bx, patterns-1
 .loop:
     mov     bp, cx
     mov     al, byte [byte orderlist-1+si-time+bp]
