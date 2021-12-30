@@ -84,7 +84,7 @@ orderlist:
     db 0xFF,    main.effect2, 0x81, 0x81, 0x81
     db   64,    main.palette, 0x61, 0x61, 0x61
     db 0xE8,     main.effect, 0x68, 0x00, 0x68
-    db 0x4E,   main.esccheck            ; last mutation: change the dec ax into das; si = 0x100 so it will go to zero in a few rounds
+    db 0x0A,   main.esccheck            ; last mutation: change the dec ax / jnz main into or dh,[di-0x4e], mostly a NOP that leaves carry cleared
 patterns:
     db 108, 96, 0,  81, 96, 108, 0, 54  ; patterns play from last to first
     db      54, 0, 108, 54,  54, 0, 54  ; 54 from previous pattern
