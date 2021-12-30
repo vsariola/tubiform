@@ -111,8 +111,8 @@ irq:
     mul     ah
     shl     ax, cl                          ; the channels are one octave apart
     imul    ax, word [si]                   ; t*freq
-    test    ah, ah                          ; square wave
-    jns      .skipchannel
+    sahf                                    ; square wave
+    jns      .skipchannel                   ; you can test different flags here to shift song up/down octaves
     mov     byte [envs-1+bp+si-time], dl    ; save the envelope for visuals
     add     di, dx                          ; add channel to sample total
 .skipchannel:
