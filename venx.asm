@@ -18,23 +18,23 @@ envs:
 main:                                   ; basic tunnel effect, based on Hellmood's original from http://www.sizecoding.org/wiki/Floating-point_Opcodes#The_.22Tunnel.22
     sub		dh, 0x68                    ; dh = y, shift it to center the coordinates
     pusha				                ; push all registers to stack 0xFFFC: ax, 0xFFFA: cx, 0xFFF8: dx, bx, sp, bp, si, di
-    xor     bx, bx
-    fild 	word [bx-13]	                ; fpu: x*256               -9 = 0xFFF7, x is at 0xFFF8 and y is at 0xFFF9
-    fild 	word [bx-12]                 ; fpu: y*256(+x) x*256
+    mov     bx,-12
+    fild 	word [bx-1]	                ; fpu: x*256               -9 = 0xFFF7, x is at 0xFFF8 and y is at 0xFFF9
+    fild 	word [bx]                 ; fpu: y*256(+x) x*256
     fpatan				                ; fpu: theta
     fst 	st1			                ; fpu: theta theta
     fprem				                ; this instruction will be mutated with fsin so for proper tunnel, fpu: sin(theta) theta
     .effect equ $-1                     ; 0xF3, 0xF4, 0xFE and 0xFC are pretty ok for the last byte
     fimul	dword [byte si+scaleconst]  ; fpu: const*cos(theta) theta, the constant is what ever the lines there assemble to
     .rscale equ $-1
-    fidiv	word [bx-13]	                ; fpu: const*sin(theta)/x/256=1/r theta
+    fidiv	word [bx-1]	                ; fpu: const*sin(theta)/x/256=1/r theta
     fisub	word [byte si+time]         ; fpu: 1/r+offset theta
-    fistp	dword [bx-12]                ; store r+offset to where dx is, cx&dx affected after popa, fpu: theta
+    fistp	dword [bx]                ; store r+offset to where dx is, cx&dx affected after popa, fpu: theta
     fnop                                ; this fnop will mutated to something more interesting eventually
     .effect2 equ $-1
     fimul	word [byte si+time+3]	    ; fpu: t*theta (+2 is initially wrong, but will be replaced with time+0 i.e. correct)
     .thetascale equ $-1
-    fistp	dword [bx-10]                ; store r+offset to where cx is, cx&ax affected after popa,
+    fistp	dword [bx+2]                ; store r+offset to where cx is, cx&ax affected after popa,
     popa				                ; pop all registers from stack
     add     ch, byte [byte si+envs+2]   ; we add together the last two envelopes
     xor 	dh, ch		                ; dh = r, ch = theta
