@@ -63,6 +63,8 @@ setirq:
     out     40h, al                     ; write PIT counter divisor low byte
     salc                                ; set AL = 0 (because carry is zero)
     out     40h, al	                    ; write PIT counter divisor high byte (freq = 1,19318181818 MHz / divisor)
+    mov     al, 10h
+    int     10h
     mov     ax, 251ch                   ; al = which PIT timer interrupt tos set: 08 or 1c. 1c gets called after 08
     int     21h                         ; ah = 25h => set interrupt handler, al = which interrupt. Tomcat: "standard INT08 rutine call INT1C after its own business"
     ret
