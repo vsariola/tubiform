@@ -1,6 +1,6 @@
 org 100h
 
-; at startup, ax = 0x0000, si = 0x0100, sp = 0xFFFE and most flags are zero
+; at startup, ax = 0x0000, cx = 0x00FF, si = 0x0100, sp = 0xFFFE and most flags are zero
     mov     ax, 351ch			        ; int 21h: ah=35h get interrupt handler, al=1Ch which interrupt
     int     21h					        ; returns the handler in es:bx
     push    es
@@ -9,7 +9,7 @@ org 100h
                                         ; push = 0x68 is also used as the shift constant
     pop 	es
     scaleconst equ $+1
-    mov     al, 255                     ; PIT counter divisor, al = 255. Irq init based on superogue's code.
+    xchg    ax, cx                      ; PIT counter divisor, al = 255. Irq init based on superogue's code.
     mov     dx, irq                     ; new handler address
     call    setirq
 envs:
