@@ -35,11 +35,11 @@ main:                                   ; basic tunnel effect, based on Hellmood
     .thetascale equ $-1
     fistp	dword [bx+2]                ; store r+offset to where cx is, cx&ax affected after popa,
     popa				                ; pop all registers from stack
-    add     ch, byte [byte si+envs+2]   ; we add together the last two envelopes
+    mov     al, byte [byte si+envs+2]   ; we add together the last two envelopes
+    add     ch, al
     xor 	dh, ch		                ; dh = r, ch = theta
     shl     dh, 1
     and     dh, 64                      ; we select parts of the XOR-texture
-    mov     al, byte [byte si+envs+2]
     add     al, byte [byte si+envs+1]   ; we add together the last two envelopes
     mul     dh                          ; flash the tunnel color based on the sum of the two envelopes
     mov     al, ah
