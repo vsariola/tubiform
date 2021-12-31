@@ -98,7 +98,7 @@ irq:
     mov     bx, patterns-1
 .loop:
     mov     bp, cx                          ; TomCat: "[in IRQ on DOS] SS could be different than CS so indexing with BP could be a pain!"
-    mov     al, byte [cs:byte orderlist-1+si-time+bp]
+    mov     al, byte [byte orderlist-1+si-time+bp]
     .pattern equ $ - 1
     aam     16
     jz      .skipchannel                    ; if pattern is zero, skip this channel
@@ -113,7 +113,7 @@ irq:
     imul    ax, word [si]                   ; t*freq
     sahf                                    ; square wave
     jns      .skipchannel                   ; you can test different flags here to shift song up/down octaves
-    mov     byte [cs:envs-1+bp+si-time], dl ; save the envelope for visuals
+    mov     byte [envs-1+bp+si-time], dl ; save the envelope for visuals
     add     di, dx                          ; add channel to sample total
 .skipchannel:
     loop    .loop
