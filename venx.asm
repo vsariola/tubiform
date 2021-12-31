@@ -5,15 +5,15 @@ org 100h
     int     21h					        ; returns the handler in es:bx
     push    es
     push    bx
-    push 	0xa000 - 10-20*3            ; set es to video segment, shifting 3.5 lines (the top three lines had some isual glitch ).
-                                        ; push = 0x68 is also used as the shift constant
-    pop 	es
     scaleconst equ $
     xchg    ax, cx                      ; PIT counter divisor, al = 255. Irq init based on superogue's code.
     mov     dx, irq                     ; new handler address
     mov     bl, 0x13
 envs:
     call    setirq
+    push 	0xa000 - 10-20*3            ; set es to video segment, shifting 3.5 lines (the top three lines had some isual glitch ).
+                                        ; push = 0x68 is also used as the shift constant
+    pop 	es
 main:                                   ; basic tunnel effect, based on Hellmood's original from http://www.sizecoding.org/wiki/Floating-point_Opcodes#The_.22Tunnel.22
     sub		dh, 0x68                    ; dh = y, shift it to center the coordinates
     pusha				                ; push all registers to stack 0xFFFC: ax, 0xFFFA: cx, 0xFFF8: dx, bx, sp, bp, si, di
