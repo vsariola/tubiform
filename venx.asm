@@ -11,10 +11,9 @@ org 100h
     scaleconst equ $
     xchg    ax, cx                      ; PIT counter divisor, al = 255. Irq init based on superogue's code.
     mov     dx, irq                     ; new handler address
-    call    setirq
+    mov     bl, 0x13
 envs:
-    mov		ax, 0x13	                ; set videomode 13h
-    int 	0x10
+    call    setirq
 main:                                   ; basic tunnel effect, based on Hellmood's original from http://www.sizecoding.org/wiki/Floating-point_Opcodes#The_.22Tunnel.22
     sub		dh, 0x68                    ; dh = y, shift it to center the coordinates
     pusha				                ; push all registers to stack 0xFFFC: ax, 0xFFFA: cx, 0xFFF8: dx, bx, sp, bp, si, di
@@ -59,11 +58,12 @@ main:                                   ; basic tunnel effect, based on Hellmood
     jnz	    main
     pop     dx
     pop     ds
+    mov     bl, 3
 setirq:
     out     40h, al                     ; write PIT counter divisor low byte
     salc                                ; set AL = 0 (because carry is zero)
     out     40h, al	                    ; write PIT counter divisor high byte (freq = 1,19318181818 MHz / divisor)
-    mov     al, 10h
+    mov     al, bl
     int     10h
     mov     ax, 251ch                   ; al = which PIT timer interrupt tos set: 08 or 1c. 1c gets called after 08
     int     21h                         ; ah = 25h => set interrupt handler, al = which interrupt. Tomcat: "standard INT08 rutine call INT1C after its own business"
