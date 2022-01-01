@@ -1,7 +1,7 @@
 org 100h
 
 ; at startup, ax = 0x0000, cx = 0x00FF, si = 0x0100, sp = 0xFFFE and most flags are zero
-    mov     ax, 351ch			        ; int 21h: ah=35h get interrupt handler, al=1Ch which interrupt
+    mov     ax, 3508h			        ; int 21h: ah=35h get interrupt handler, al=1Ch which interrupt
     int     21h					        ; returns the handler in es:bx
     push    es
     push    bx
@@ -65,7 +65,7 @@ setirq:
     out     40h, al	                    ; write PIT counter divisor high byte (freq = 1,19318181818 MHz / divisor)
     xchg    al, bl
     int     10h
-    mov     ax, 251ch                   ; al = which PIT timer interrupt tos set: 08 or 1c. 1c gets called after 08
+    mov     ax, 2508h                   ; al = which PIT timer interrupt tos set: 08 or 1c. 1c gets called after 08
     int     21h                         ; ah = 25h => set interrupt handler, al = which interrupt. Tomcat: "standard INT08 rutine call INT1C after its own business"
     ret
 
@@ -131,6 +131,8 @@ irq:
 .skipnextpattern:
 .skipirq:
     pop     ds
+    mov     al, 20h
+    out     20h, al                         ; end of line for the interrupt
     popa
     iret
 
