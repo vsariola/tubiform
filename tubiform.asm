@@ -53,9 +53,9 @@ main:                                   ; basic tunnel effect, based on Hellmood
     jc      main                        ; after pusha / fild word [bx-9]
     xchg    ax, dx                      ; dx guaranteed zero
     in 		al, 0x60                    ; check for ESC key
-    .esccheck:
     dec     ax
     jnz	    main
+    .looptarget equ $-1
     pop     dx
     pop     ds
     mov     bl, 3
@@ -145,4 +145,4 @@ script:
     db 0xFF,    main.effect2
     db   64,    main.palette
     db 0xE8,     main.effect
-    db 0x0A,   main.esccheck ; last mutation: change the dec ax / jnz main into or dh,[di-0x4e], mostly a NOP that leaves carry cleared
+    db 0xFD, main.looptarget ; last mutation: change the jnz main after dec ax to jump back to dec ax, so it loops until ax guaranteed 0
