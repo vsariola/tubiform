@@ -1,21 +1,18 @@
 org 100h
 
 ; at startup, ax = 0x0000, cx = 0x00FF, si = 0x0100, sp = 0xFFFE and most flags are zero
-    mov     ax, 13h
-    int     10h
     mov     ax, 3508h			        ; int 21h: ah=35h get interrupt handler, al=1Ch which interrupt
     int     21h					        ; returns the handler in es:bx
     push    es
     push    bx
-    xchg    ax, cx                      ; PIT counter divisor, al = 255. Irq init based on superogue's code.
-    mov     al, 90h
-    out     43h, al
-    add     al, 64-90h                  ; PC speaker needs to run at much higher frequency
+    mov     ax, 64                      ; PIT counter divisor, al = 64. Irq init based on superogue's code.
     scaleconst equ $-1
     mov     dx, irq                     ; new handler address
     mov     bl, 0x13
 envs:
     call    setirq
+    xchg    ax, cx
+    out     61h, al
     push 	0xa000 - 10-20*3            ; set es to video segment, shifting 3.5 lines (the top three lines had some isual glitch ).
                                         ; push = 0x68 is also used as the shift constant
     pop 	es
@@ -30,10 +27,9 @@ main:                                   ; basic tunnel effect, based on Hellmood
     fprem				                ; this instruction will be mutated with fsin so for proper tunnel, fpu: sin(theta) theta
     .effect equ $-1                     ; 0xF3, 0xF4, 0xFE and 0xFC are pretty ok for the last byte
     fimul	dword [byte si+scaleconst]  ; fpu: const*cos(theta) theta, the constant is what ever the lines there assemble to
-    .rscale equ $-1
     fidiv	word [bx-1]	                ; fpu: const*sin(theta)/x/256=1/r theta
     fisub	word [time]                 ; fpu: 1/r+offset theta
-    fistp	dword [bx]                ; store r+offset to where dx is, cx&dx affected after popa, fpu: theta
+    fistp	dword [bx]                  ; store r+offset to where dx is, cx&dx affected after popa, fpu: theta
     fnop                                ; this fnop will mutated to something more interesting eventually
     .effect2 equ $-1
     fimul	word [time+3]	            ; fpu: t*theta (+2 is initially wrong, but will be replaced with time+0 i.e. correct)
@@ -58,55 +54,50 @@ main:                                   ; basic tunnel effect, based on Hellmood
     jc      main                        ; after pusha / fild word [bx-9]
     xchg    ax, dx                      ; dx guaranteed zero
     in 		al, 0x60                    ; check for ESC key
-    .esccheck:
     dec     ax
     jnz	    main
+    .looptarget equ $-1
     pop     dx
     pop     ds
     mov     bl, 3
+    out     61h, al
 setirq:
     out     40h, al                     ; write PIT counter divisor low byte
-    mov     al, 0
-    out     40h, al
-    salc
-    out     61h, al
+    salc                                ; set AL = 0 (because carry is zero)
+    out     40h, al	                    ; write PIT counter divisor high byte (freq = 1,19318181818 MHz / divisor)
+    xchg    al, bl
+    int     10h
     mov     ax, 2508h                   ; al = which PIT timer interrupt tos set: 08 or 1c. 1c gets called after 08
     int     21h                         ; ah = 25h => set interrupt handler, al = which interrupt. Tomcat: "standard INT08 rutine call INT1C after its own business"
-    cmp     bl, 3
-    jne     .cont
-    movzx   ax, bl
-    int     10h
-.cont:
+    mov     al, 90h
+    out     43h, al
     ret
 
 
 time:
     db 0,0
-; orderlist has: mutate address, mutate value, chn 1, chn 2, chn 3
-; There is no need for "first pattern" script, because for the first
-; pattern, everything is as loaded. So we place time in that slot.
-orderlist:
-    db                        0x00, 0x68, 0x00
-    db time, main.thetascale, 0x61, 0x61, 0x00
-    db 0xF3,     main.effect, 0x81, 0x81, 0x00
-    db 0xF4,     main.effect, 0x61, 0x61, 0x00
-    db 0xFE,     main.effect, 0x91, 0x00, 0x91
-    db 0xFF,    main.effect2, 0x81, 0x81, 0x81
-    db   64,    main.palette, 0x61, 0x61, 0x61
-    db 0xE8,     main.effect, 0x68, 0x00, 0x68
-    db 0x0A,   main.esccheck            ; last mutation: change the dec ax / jnz main into or dh,[di-0x4e], mostly a NOP that leaves carry cleared
 patterns:
     db 108, 96, 0,  81, 96, 108, 0, 54  ; patterns play from last to first
     db      54, 0, 108, 54,  54, 0, 54  ; 54 from previous pattern
+; orderlist has: chn 1, chn 2, chn 3
+orderlist:
+    db 0x00, 0x6A, 0x00
+    db 0x64, 0x63, 0x00
+    db 0x84, 0x83, 0x00
+    db 0x64, 0x63, 0x00
+    db 0x94, 0x00, 0x92
+    db 0x84, 0x83, 0x82
+    db 0x64, 0x63, 0x62
+    db 0x6B, 0x00, 0x69
 
 
 irq:
     pusha
-    mov     ax, 4
-    .sample equ $-2
-    mov     cx, 346         ; mastering
-    mul     cx
-    shr     ax, 10
+    mov     al, 4
+    .sample equ $-1
+    mov     cl, 176         ; mastering
+    mul     cl
+    shr     ax, 9
     jz      .skipout
     out     42h, al
 .skipout:
@@ -116,16 +107,14 @@ irq:
     dec     byte [counter]
     jnz     .skipirq
     mov     byte [counter], 4
-    xor     di, di
+    xor     bp, bp
     mov     cx, 3                           ; cx is the channel loop counter, we have three channels
     mov     si, time
-    mov     bx, patterns-1
+    mov     bx, si
 .loop:
-    mov     bp, cx                          ; TomCat: "[in IRQ on DOS] SS could be different than CS so indexing with BP could be a pain!"
-    mov     al, byte [cs:byte orderlist-1+si-time+bp]
+    mov     al, byte [byte orderlist-patterns+bx+4]
     .pattern equ $ - 1
     aam     16
-    jz      .skipchannel                    ; if pattern is zero, skip this channel
     mov     dx, [si]                        ; si points to time
     shr     dx, cl                          ; the bits shifted out of si are the position within note
     and     dh, 7                           ; patterns are 8 notes long, dh is now the row within pattern
@@ -137,22 +126,23 @@ irq:
     imul    ax, word [si]                   ; t*freq
     sahf                                    ; square wave
     jns      .skipchannel                   ; you can test different flags here to shift song up/down octaves
-    mov     byte [cs:envs-1+bp+si-time], dl ; save the envelope for visuals
-    add     di, dx                          ; add channel to sample total
+    mov     byte [envs+bx-patterns+4], dl ; save the envelope for visuals
+    add     bp, dx                          ; add channel to sample total
 .skipchannel:
+    dec     bx
     loop    .loop
-    xchg    ax, di
+    xchg    ax, bp
+    mov     byte [irq.sample], al
     dec     word [si]                       ; the time runs backwards to have decaying envelopes
     js      .skipnextpattern
-    mov     ax, word [orderlist+3]
-    .script equ $-2
+    mov     ax, word [script]
+    .scriptpos equ $-2
     mov     bl, ah
     mov     byte [bx], al                   ; change part of the code based on demo part
     mov     word [si], cx                   ; cx guaranteed to be zero
-    add     byte [.pattern+si-time],5       ; modify the movzx instruction
-    add     word [.script+si-time],5
+    add     byte [.pattern+si-time],3       ; modify the movzx instruction
+    add     word [.scriptpos+si-time],2
 .skipnextpattern:
-    mov     byte [irq.sample], al
 .skipirq:
     pop     ds
     mov     al, 20h
@@ -160,6 +150,16 @@ irq:
     popa
     iret
 
+; There is no need for "first pattern" script, because for the first
+; pattern, everything is as loaded. So we place time in that slot.
+script:
+    db time, main.thetascale
+    db 0xF3,     main.effect
+    db 0xF4,     main.effect
+    db 0xFE,     main.effect
+    db 0xFF,    main.effect2
+    db   64,    main.palette
+    db 0xE8,     main.effect
+    db 0xFD, main.looptarget ; last mutation: change the jnz main after dec ax to jump back to dec ax, so it loops until ax guaranteed 0
 counter:
     db 4
-    
