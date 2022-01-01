@@ -1,2 +1,2 @@
-nasm venx.asm -fbin -o venx.com
-nasm venx.asm -DSPEAKER -fbin -o venxspkr.com
+nasm tubiform.asm -fbin -o tubiform.com
+nasm tubiform.asm -DSPEAKER -fbin -o tubiform.com
