@@ -77,14 +77,14 @@ patterns:
     db      54, 0, 108, 54,  54, 0, 54  ; 54 from previous pattern
 ; orderlist has: chn 1, chn 2, chn 3
 orderlist:
-    db 0x00, 0x69, 0x00
-    db 0x63, 0x62, 0x00
-    db 0x83, 0x82, 0x00
-    db 0x63, 0x62, 0x00
-    db 0x93, 0x00, 0x91
-    db 0x83, 0x82, 0x81
-    db 0x63, 0x62, 0x61
-    db 0x6A, 0x00, 0x68
+    db 0x00, 0x6A, 0x00
+    db 0x64, 0x63, 0x00
+    db 0x84, 0x83, 0x00
+    db 0x64, 0x63, 0x00
+    db 0x94, 0x00, 0x92
+    db 0x84, 0x83, 0x82
+    db 0x64, 0x63, 0x62
+    db 0x6B, 0x00, 0x69
 
 
 irq:
@@ -95,9 +95,9 @@ irq:
     xor     bp, bp
     mov     cx, 3                           ; cx is the channel loop counter, we have three channels
     mov     si, time
-    mov     bx, patterns-1
+    mov     bx, si
 .loop:
-    mov     al, byte [byte orderlist-patterns+bx+3]
+    mov     al, byte [byte orderlist-patterns+bx+4]
     .pattern equ $ - 1
     aam     16
     jz      .skipchannel                    ; if pattern is zero, skip this channel
@@ -112,7 +112,7 @@ irq:
     imul    ax, word [si]                   ; t*freq
     sahf                                    ; square wave
     jns      .skipchannel                   ; you can test different flags here to shift song up/down octaves
-    mov     byte [envs+bx-patterns+3], dl ; save the envelope for visuals
+    mov     byte [envs+bx-patterns+4], dl ; save the envelope for visuals
     add     bp, dx                          ; add channel to sample total
 .skipchannel:
     dec     bx
