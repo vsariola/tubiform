@@ -77,14 +77,14 @@ patterns:
     db      54, 0, 108, 54,  54, 0, 54  ; 54 from previous pattern
 ; orderlist has: chn 1, chn 2, chn 3
 orderlist:
-    db 0x00, 0x68, 0x00
-    db 0x61, 0x61, 0x00
-    db 0x81, 0x81, 0x00
-    db 0x61, 0x61, 0x00
-    db 0x91, 0x00, 0x91
-    db 0x81, 0x81, 0x81
-    db 0x61, 0x61, 0x61
-    db 0x68, 0x00, 0x68
+    db 0x00, 0x69, 0x00
+    db 0x63, 0x62, 0x00
+    db 0x83, 0x82, 0x00
+    db 0x63, 0x62, 0x00
+    db 0x93, 0x00, 0x91
+    db 0x83, 0x82, 0x81
+    db 0x63, 0x62, 0x61
+    db 0x6A, 0x00, 0x68
 
 
 irq:
@@ -97,8 +97,7 @@ irq:
     mov     si, time
     mov     bx, patterns-1
 .loop:
-    mov     di, cx                          ; TomCat: "[in IRQ on DOS] SS could be different than CS so indexing with BP could be a pain!"
-    mov     al, byte [byte orderlist-patterns+bx+di]
+    mov     al, byte [byte orderlist-patterns+bx+3]
     .pattern equ $ - 1
     aam     16
     jz      .skipchannel                    ; if pattern is zero, skip this channel
@@ -113,9 +112,10 @@ irq:
     imul    ax, word [si]                   ; t*freq
     sahf                                    ; square wave
     jns      .skipchannel                   ; you can test different flags here to shift song up/down octaves
-    mov     byte [envs+di+bx-patterns], dl ; save the envelope for visuals
+    mov     byte [envs+bx-patterns+3], dl ; save the envelope for visuals
     add     bp, dx                          ; add channel to sample total
 .skipchannel:
+    dec     bx
     loop    .loop
     xchg    ax, bp
     mov     dx, 0378h                       ; LPT1 parallel port address
