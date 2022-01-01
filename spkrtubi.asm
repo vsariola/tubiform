@@ -1,11 +1,16 @@
 org 100h
 
 ; at startup, ax = 0x0000, cx = 0x00FF, si = 0x0100, sp = 0xFFFE and most flags are zero
-    mov     ax, 351ch			        ; int 21h: ah=35h get interrupt handler, al=1Ch which interrupt
+    mov     ax, 13h
+    int     10h
+    mov     ax, 3508h			        ; int 21h: ah=35h get interrupt handler, al=1Ch which interrupt
     int     21h					        ; returns the handler in es:bx
     push    es
     push    bx
     xchg    ax, cx                      ; PIT counter divisor, al = 255. Irq init based on superogue's code.
+    mov     al, 90h
+    out     43h, al
+    add     al, 64-90h                  ; PC speaker needs to run at much higher frequency
     scaleconst equ $-1
     mov     dx, irq                     ; new handler address
     mov     bl, 0x13
@@ -27,12 +32,12 @@ main:                                   ; basic tunnel effect, based on Hellmood
     fimul	dword [byte si+scaleconst]  ; fpu: const*cos(theta) theta, the constant is what ever the lines there assemble to
     .rscale equ $-1
     fidiv	word [bx-1]	                ; fpu: const*sin(theta)/x/256=1/r theta
-    fisub	word [byte si+time]         ; fpu: 1/r+offset theta
+    fisub	word [time]                 ; fpu: 1/r+offset theta
     fistp	dword [bx]                ; store r+offset to where dx is, cx&dx affected after popa, fpu: theta
     fnop                                ; this fnop will mutated to something more interesting eventually
     .effect2 equ $-1
-    fimul	word [byte si+time+3]	    ; fpu: t*theta (+2 is initially wrong, but will be replaced with time+0 i.e. correct)
-    .thetascale equ $-1
+    fimul	word [time+3]	            ; fpu: t*theta (+2 is initially wrong, but will be replaced with time+0 i.e. correct)
+    .thetascale equ $-2
     fistp	dword [bx+2]                ; store r+offset to where cx is, cx&ax affected after popa,
     popa				                ; pop all registers from stack
     mov     al, byte [byte si+envs+2]   ; we add together the last two envelopes
@@ -61,12 +66,17 @@ main:                                   ; basic tunnel effect, based on Hellmood
     mov     bl, 3
 setirq:
     out     40h, al                     ; write PIT counter divisor low byte
-    salc                                ; set AL = 0 (because carry is zero)
-    out     40h, al	                    ; write PIT counter divisor high byte (freq = 1,19318181818 MHz / divisor)
-    xchg    al, bl
-    int     10h
-    mov     ax, 251ch                   ; al = which PIT timer interrupt tos set: 08 or 1c. 1c gets called after 08
+    mov     al, 0
+    out     40h, al
+    salc
+    out     61h, al
+    mov     ax, 2508h                   ; al = which PIT timer interrupt tos set: 08 or 1c. 1c gets called after 08
     int     21h                         ; ah = 25h => set interrupt handler, al = which interrupt. Tomcat: "standard INT08 rutine call INT1C after its own business"
+    cmp     bl, 3
+    jne     .cont
+    movzx   ax, bl
+    int     10h
+.cont:
     ret
 
 
@@ -92,9 +102,20 @@ patterns:
 
 irq:
     pusha
+    mov     ax, 4
+    .sample equ $-2
+    mov     cx, 346         ; mastering
+    mul     cx
+    shr     ax, 10
+    jz      .skipout
+    out     42h, al
+.skipout:
     push    ds
     push    cs
     pop     ds
+    dec     byte [counter]
+    jnz     .skipirq
+    mov     byte [counter], 4
     xor     di, di
     mov     cx, 3                           ; cx is the channel loop counter, we have three channels
     mov     si, time
@@ -121,8 +142,6 @@ irq:
 .skipchannel:
     loop    .loop
     xchg    ax, di
-    mov     dx, 0378h                       ; LPT1 parallel port address
-    out     dx, al		                    ; write 8 Bit sample data
     dec     word [si]                       ; the time runs backwards to have decaying envelopes
     js      .skipnextpattern
     mov     ax, word [orderlist+3]
@@ -133,7 +152,14 @@ irq:
     add     byte [.pattern+si-time],5       ; modify the movzx instruction
     add     word [.script+si-time],5
 .skipnextpattern:
+    mov     byte [irq.sample], al
 .skipirq:
     pop     ds
+    mov     al, 20h
+    out     20h, al                         ; end of line for the interrupt
     popa
     iret
+
+counter:
+    db 4
+    
