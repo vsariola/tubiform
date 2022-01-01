@@ -95,13 +95,13 @@ irq:
     push    ds
     push    cs
     pop     ds
-    xor     di, di
+    xor     bp, bp
     mov     cx, 3                           ; cx is the channel loop counter, we have three channels
     mov     si, time
     mov     bx, patterns-1
 .loop:
-    mov     bp, cx                          ; TomCat: "[in IRQ on DOS] SS could be different than CS so indexing with BP could be a pain!"
-    mov     al, byte [cs:byte orderlist-1+si-time+bp]
+    mov     di, cx                          ; TomCat: "[in IRQ on DOS] SS could be different than CS so indexing with BP could be a pain!"
+    mov     al, byte [byte orderlist-patterns+bx+di]
     .pattern equ $ - 1
     aam     16
     jz      .skipchannel                    ; if pattern is zero, skip this channel
@@ -116,11 +116,11 @@ irq:
     imul    ax, word [si]                   ; t*freq
     sahf                                    ; square wave
     jns      .skipchannel                   ; you can test different flags here to shift song up/down octaves
-    mov     byte [cs:envs-1+bp+si-time], dl ; save the envelope for visuals
-    add     di, dx                          ; add channel to sample total
+    mov     byte [envs+di-1], dl ; save the envelope for visuals
+    add     bp, dx                          ; add channel to sample total
 .skipchannel:
     loop    .loop
-    xchg    ax, di
+    xchg    ax, bp
     mov     dx, 0378h                       ; LPT1 parallel port address
     out     dx, al		                    ; write 8 Bit sample data
     dec     word [si]                       ; the time runs backwards to have decaying envelopes
