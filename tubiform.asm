@@ -72,22 +72,19 @@ setirq:
 
 time:
     db 0,0
-; orderlist has: mutate address, mutate value, chn 1, chn 2, chn 3
-; There is no need for "first pattern" script, because for the first
-; pattern, everything is as loaded. So we place time in that slot.
-orderlist:
-    db                        0x00, 0x68, 0x00
-    db time, main.thetascale, 0x61, 0x61, 0x00
-    db 0xF3,     main.effect, 0x81, 0x81, 0x00
-    db 0xF4,     main.effect, 0x61, 0x61, 0x00
-    db 0xFE,     main.effect, 0x91, 0x00, 0x91
-    db 0xFF,    main.effect2, 0x81, 0x81, 0x81
-    db   64,    main.palette, 0x61, 0x61, 0x61
-    db 0xE8,     main.effect, 0x68, 0x00, 0x68
-    db 0x0A,   main.esccheck            ; last mutation: change the dec ax / jnz main into or dh,[di-0x4e], mostly a NOP that leaves carry cleared
 patterns:
     db 108, 96, 0,  81, 96, 108, 0, 54  ; patterns play from last to first
     db      54, 0, 108, 54,  54, 0, 54  ; 54 from previous pattern
+; orderlist has: chn 1, chn 2, chn 3
+orderlist:
+    db 0x00, 0x68, 0x00
+    db 0x61, 0x61, 0x00
+    db 0x81, 0x81, 0x00
+    db 0x61, 0x61, 0x00
+    db 0x91, 0x00, 0x91
+    db 0x81, 0x81, 0x81
+    db 0x61, 0x61, 0x61
+    db 0x68, 0x00, 0x68
 
 
 irq:
@@ -116,7 +113,7 @@ irq:
     imul    ax, word [si]                   ; t*freq
     sahf                                    ; square wave
     jns      .skipchannel                   ; you can test different flags here to shift song up/down octaves
-    mov     byte [envs+di-1], dl ; save the envelope for visuals
+    mov     byte [envs+di+bx-patterns], dl ; save the envelope for visuals
     add     bp, dx                          ; add channel to sample total
 .skipchannel:
     loop    .loop
@@ -125,15 +122,27 @@ irq:
     out     dx, al		                    ; write 8 Bit sample data
     dec     word [si]                       ; the time runs backwards to have decaying envelopes
     js      .skipnextpattern
-    mov     ax, word [orderlist+3]
-    .script equ $-2
+    mov     ax, word [script]
+    .scriptpos equ $-2
     mov     bl, ah
     mov     byte [bx], al                   ; change part of the code based on demo part
     mov     word [si], cx                   ; cx guaranteed to be zero
-    add     byte [.pattern+si-time],5       ; modify the movzx instruction
-    add     word [.script+si-time],5
+    add     byte [.pattern+si-time],3       ; modify the movzx instruction
+    add     word [.scriptpos+si-time],2
 .skipnextpattern:
 .skipirq:
     pop     ds
     popa
     iret
+
+; There is no need for "first pattern" script, because for the first
+; pattern, everything is as loaded. So we place time in that slot.
+script:
+    db time, main.thetascale
+    db 0xF3,     main.effect
+    db 0xF4,     main.effect
+    db 0xFE,     main.effect
+    db 0xFF,    main.effect2
+    db   64,    main.palette
+    db 0xE8,     main.effect
+    db 0x0A,   main.esccheck ; last mutation: change the dec ax / jnz main into or dh,[di-0x4e], mostly a NOP that leaves carry cleared
