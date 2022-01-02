@@ -16,7 +16,7 @@ Based on DOSBox cycle estimates, I estimate it to be watchable on a 66
 MHz 486, and indistinguishable from the capture on a ~ Pentium. However,
 I don't have an oldschool DOS machine; if you do, please get in touch
 and report how (if) it runs. Email address firstname.lastname@gmail.com
-works.
+works, or pestis @ Sizecoding & Demoscene discords.
 
 Massive love to everyone answering my clueless questions on the
 sizecoding discord #x86 channel: superogue, HellMood, TomCat, baze,
