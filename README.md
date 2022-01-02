@@ -9,7 +9,7 @@ well, but it sounds more reasonable on real machines.
 
 Source code: https://github.com/vsariola/tubiform
 
-Capture: https://www.youtube.com/watch?v=KDmdM0f4dqw
+Capture: https://youtu.be/FYwOUeJrgLo
 
 Tested to be working on DOSBox and FreeDOS, running on a modern laptop.
 Based on DOSBox cycle estimates, I estimate it to be watchable on a 66
