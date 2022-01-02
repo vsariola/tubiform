@@ -126,3 +126,7 @@ ends), we can now be sure that ax is 0.
   original interrupt handler and return back to text mode. This is
   regardless of how the intro ends: if the song ends or if the user
   presses ESC. I was told you get extra cool points for clean exits.
+
+License: [MIT](LICENSE)
+
+![Screenshot of the intro](screenshot.png)
