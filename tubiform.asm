@@ -122,10 +122,10 @@ irq:
     mov     word [si], cx                   ; cx guaranteed to be zero
     mov     ax, word [script]
     .scriptpos equ $-2
-    mov     bl, ah
+    mov     bl, ah                          ; bh guaranteed to be 0x01 so we're good
     mov     byte [bx], al                   ; change part of the code based on demo part
-    add     byte [.pattern+si-time],3       ; modify the movzx instruction
-    add     word [.scriptpos+si-time],2
+    add     byte [.pattern+si-time],3       ; modify the mov al, byte ... instruction
+    add     word [.scriptpos+si-time],2     ; advance the script position by 2
 .skipnextpattern:
     pop     ds
     mov     al, 20h
