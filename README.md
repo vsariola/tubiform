@@ -11,12 +11,15 @@ Source code: https://github.com/vsariola/tubiform
 
 Capture: https://youtu.be/FYwOUeJrgLo
 
-Tested to be working on DOSBox and FreeDOS, running on a modern laptop.
-Based on DOSBox cycle estimates, I estimate it to be watchable on a 66
-MHz 486, and indistinguishable from the capture on a ~ Pentium. However,
-I don't have an oldschool DOS machine; if you do, please get in touch
-and report how (if) it runs. Email address firstname.lastname@gmail.com
-works, or pestis @ Sizecoding & Demoscene discords.
+Tested to be working on DOSBox, FreeDOS (on a modern laptop) and MS-DOS
+6.22 (on a Pentium MMX 233). One effect is glitching on DOSBox-x, but
+otherwise it seems to run fine. Maybe DOSBox-x is not happy how I mess
+with the FPU stack.
+
+Based on DOSBox cycle estimates, I would've estimated it to be watchable
+on a 66 MHz 486, but it was already kinda blurry on the 233 MHz Pentium.
+If you are experiencing issues running this on actual hardware, please
+get in touch (pestis @ Sizecoding & Demoscene discords)
 
 Massive love to everyone answering my clueless questions on the
 sizecoding discord #x86 channel: superogue, HellMood, TomCat, baze,
